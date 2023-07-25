@@ -9,6 +9,10 @@ import (
 	"google.golang.org/grpc/credentials"
 )
 
+type authProvider interface {
+	Lookup(key []byte) (u *server.User, err error)
+}
+
 type KeysClient struct {
 	ksc server.KeyServiceClient
 }
