@@ -101,15 +101,17 @@ func TestSSH_Authorise(t *testing.T) {
 		name        string
 		ctx         context.Context
 		ac          *dummyAdminClient
+		clonePath   string
 		expectPath  string
 		expectError bool
 	}{
-		{"Empty context", context.Background(), &dummyAdminClient{}, "", true},
-		{"Incorrect context type", context.WithValue(context.Background(), gitkit.PublicKeyContextKey{}, 123456789), &dummyAdminClient{}, "", true},
-		{"AC Errors halt authorisation", context.WithValue(context.Background(), gitkit.PublicKeyContextKey{}, gitkit.PublicKey{Name: "test-user"}), &dummyAdminClient{err: true}, "", true},
-		{"Invalid user gets dropped", context.WithValue(context.Background(), gitkit.PublicKeyContextKey{}, gitkit.PublicKey{Name: "test-user"}), &dummyAdminClient{finalUser: "dave"}, "some/repo", true},
+		{"Empty context", context.Background(), &dummyAdminClient{}, "some/repo", "", true},
+		{"Incorrect context type", context.WithValue(context.Background(), gitkit.PublicKeyContextKey{}, 123456789), &dummyAdminClient{}, "some/repo", "", true},
+		{"AC Errors halt authorisation", context.WithValue(context.Background(), gitkit.PublicKeyContextKey{}, gitkit.PublicKey{Name: "test-user"}), &dummyAdminClient{err: true}, "some/repo", "", true},
+		{"Invalid user gets dropped", context.WithValue(context.Background(), gitkit.PublicKeyContextKey{}, gitkit.PublicKey{Name: "test-user"}), &dummyAdminClient{finalUser: "dave"}, "some/repo", "some/repo", true},
 
-		{"Valid user gets access", context.WithValue(context.Background(), gitkit.PublicKeyContextKey{}, gitkit.PublicKey{Name: "test-user"}), &dummyAdminClient{}, "some/repo", false},
+		{"Valid user gets access", context.WithValue(context.Background(), gitkit.PublicKeyContextKey{}, gitkit.PublicKey{Name: "test-user"}), &dummyAdminClient{}, "some/repo", "some/repo", false},
+		{"Valid user gets access despite repo having .git suffix", context.WithValue(context.Background(), gitkit.PublicKeyContextKey{}, gitkit.PublicKey{Name: "test-user"}), &dummyAdminClient{}, "some/repo.git", "some/repo", false},
 	} {
 		t.Run(test.name, func(t *testing.T) {
 			s := NewSSH("", nil, test.ac)

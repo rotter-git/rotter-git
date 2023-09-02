@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"strings"
 
 	"github.com/hasura/go-graphql-client"
 	"github.com/sosedoff/gitkit"
@@ -134,7 +135,7 @@ func (s *SSH) Authorise(ctx context.Context, cmd *gitkit.GitCommand) error {
 	var query adminQuery
 
 	variables := map[string]interface{}{
-		"path": cmd.Repo,
+		"path": removeGitSuffix(cmd.Repo),
 	}
 
 	err := s.adminClient.Query(context.Background(), &query, variables)
@@ -157,4 +158,8 @@ func (s *SSH) Authorise(ctx context.Context, cmd *gitkit.GitCommand) error {
 // on an address for SSH
 func (s *SSH) Serve() error {
 	return s.ListenAndServe(s.addr)
+}
+
+func removeGitSuffix(s string) string {
+	return strings.Replace(s, ".git", "", -1)
 }
