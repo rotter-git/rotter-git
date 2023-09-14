@@ -135,7 +135,7 @@ func (s *SSH) Authorise(ctx context.Context, cmd *gitkit.GitCommand) error {
 	var query adminQuery
 
 	variables := map[string]interface{}{
-		"path": removeGitSuffix(cmd.Repo),
+		"path": addGitSuffix(cmd.Repo),
 	}
 
 	err := s.adminClient.Query(context.Background(), &query, variables)
@@ -160,6 +160,10 @@ func (s *SSH) Serve() error {
 	return s.ListenAndServe(s.addr)
 }
 
-func removeGitSuffix(s string) string {
-	return strings.Replace(s, ".git", "", -1)
+func addGitSuffix(s string) string {
+	if strings.HasSuffix(s, ".git") {
+		return s
+	}
+
+	return fmt.Sprintf("%s.git", s)
 }

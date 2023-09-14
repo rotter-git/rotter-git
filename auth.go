@@ -37,5 +37,6 @@ func NewKeyServiceClient(addr string) (c *KeysClient, err error) {
 func (c *KeysClient) Lookup(key []byte) (u *server.User, err error) {
 	return c.ksc.Lookup(context.Background(), &server.PublicKey{
 		Contents: key,
+		Type:     server.KeyType_SSH,
 	})
 }
